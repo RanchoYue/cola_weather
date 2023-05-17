@@ -31,6 +31,7 @@ class CitiesState extends State<Cities> {
 
   @override
   void initState() {
+    super.initState();
     cityMap = Map();
     _getCitiesId().then((list) {
       for (String id in list) {

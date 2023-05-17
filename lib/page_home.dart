@@ -11,13 +11,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
-  String id;
-
-  HomePage(this.id);
-
   @override
   State<StatefulWidget> createState() {
-    return new HomePageState(id);
+    return new HomePageState();
   }
 }
 
@@ -27,9 +23,8 @@ class HomePageState extends State<HomePage> {
 
   AMapFlutterLocation _amapLocation = AMapFlutterLocation();
   static List citiesMap = [];
-  String extraId = "";
 
-  HomePageState(this.extraId);
+  HomePageState();
 
   WeatherInfo weatherInfo = new WeatherInfo(
       realtime: new Realtime(wS: '', temp: '', wD: '', weather: '', time: ''),
@@ -47,8 +42,6 @@ class HomePageState extends State<HomePage> {
       if (image?.path != null) {
         path = image?.path;
       }
-      print("yue_---------------------000");
-
       _image = new File(path!);
       _setImagePath(_image.path);
     });
@@ -56,11 +49,11 @@ class HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    super.initState();
     startLocation();
     _getImagePath();
+    _getCityId();
     _loadCities();
-    _fetchWeatherInfo(extraId);
-    return;
   }
 
   @override
@@ -69,7 +62,7 @@ class HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     return new MaterialApp(
       home: new Scaffold(
-        resizeToAvoidBottomInset: false, //false键盘弹起不重新布局 避免挤压布局
+        resizeToAvoidBottomInset: false,
         body: new Stack(
           children: <Widget>[
             new Container(
@@ -323,22 +316,32 @@ class HomePageState extends State<HomePage> {
     citiesMap = json.decode(jsonString)['cities'];
   }
 
+  _setImagePath(String path) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString("bg_path", path);
+  }
+
   _getImagePath() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String path = prefs.get("bgpath").toString();
+    String path = prefs.get("bg_path").toString();
     setState(() {
       _image = new File(path);
     });
   }
 
-  _setImagePath(String path) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString("bgpath", path);
-  }
-
   _setCityId(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString("cityid", id);
+    await prefs.setString("city_id", id);
+  }
+
+  _getCityId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String city_id = prefs.get("city_id").toString();
+    if (city_id.isEmpty) {
+      _fetchWeatherInfo("101270101");
+    } else {
+      _fetchWeatherInfo(city_id);
+    }
   }
 
   Future<void> startLocation() async {
@@ -357,7 +360,7 @@ class HomePageState extends State<HomePage> {
         }
       }
     }
-    return "defaultID";
+    return "101270101";
   }
 
   @override
