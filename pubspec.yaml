@@ -23,6 +23,7 @@ dependencies:
   shared_preferences: ^2.0.5
   json_annotation: ^4.1.0
   amap_flutter_location: ^3.0.0
+  permission_handler: ^10.2.0
 
 dev_dependencies:
   flutter_test:
