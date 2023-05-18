@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
-project(cola LANGUAGES CXX)
+project(cola_weather LANGUAGES CXX)
 
-set(BINARY_NAME "cola")
+set(BINARY_NAME "cola_weather")
 
 cmake_policy(SET CMP0063 NEW)
 

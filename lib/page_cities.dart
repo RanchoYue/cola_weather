@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cola/model/weather_info.dart';
-import 'package:cola/page_home.dart';
+import 'package:cola_weather/model/weather_info.dart';
+import 'package:cola_weather/page_home.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

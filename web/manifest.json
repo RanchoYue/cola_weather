@@ -1,6 +1,6 @@
 {
-    "name": "cola",
-    "short_name": "cola",
+    "name": "cola_weather",
+    "short_name": "cola_weather",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

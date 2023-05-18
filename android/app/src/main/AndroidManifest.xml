@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.cola">
+    package="com.example.cola_weather">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 获取运营商信息，用于支持提供运营商信息相关的接口 -->

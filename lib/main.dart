@@ -1,5 +1,5 @@
-import 'package:cola/page_cities.dart';
-import 'package:cola/page_home.dart';
+import 'package:cola_weather/page_cities.dart';
+import 'package:cola_weather/page_home.dart';
 import 'package:flutter/material.dart';
 
 void main() {

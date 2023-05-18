@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:amap_flutter_location/amap_flutter_location.dart';
-import 'package:cola/model/weather_info.dart';
-import 'package:cola/page_cities.dart';
+import 'package:cola_weather/model/weather_info.dart';
+import 'package:cola_weather/page_cities.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
