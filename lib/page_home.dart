@@ -337,7 +337,7 @@ class HomePageState extends State<HomePage> {
   _getCityId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String city_id = prefs.get("city_id").toString();
-    if (city_id.isEmpty) {
+    if (city_id == "null") {
       _fetchWeatherInfo("101270101");
     } else {
       _fetchWeatherInfo(city_id);
