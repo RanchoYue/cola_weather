@@ -7,12 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void main() {
-  runApp(new MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -20,7 +22,7 @@ class _MyAppState extends State<MyApp> {
 
   StreamSubscription<Map<String, Object>>? _locationListener;
 
-  AMapFlutterLocation _locationPlugin = new AMapFlutterLocation();
+  final AMapFlutterLocation _locationPlugin = AMapFlutterLocation();
 
   @override
   void initState() {
@@ -85,11 +87,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    return MaterialApp(
       routes: <String, WidgetBuilder>{
-        '/home': (BuildContext context) => HomePage(),
+        '/home': (BuildContext context) => const HomePage(),
       },
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 

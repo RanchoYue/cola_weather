@@ -4,19 +4,16 @@ import 'dart:io';
 
 import 'package:cola_weather/model/weather_info.dart';
 import 'package:cola_weather/page_home.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _explanatoryText =
-    "When the Scaffold's floating action button changes, the new button fades and "
-    'turns into view. In this demo, changing tabs can cause the app to be rebuilt '
-    'with a FloatingActionButton that the Scaffold distinguishes from the others '
-    'by its key.';
-
 class Cities extends StatefulWidget {
+  const Cities({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
-    return new CitiesState();
+    return CitiesState();
   }
 }
 
@@ -25,14 +22,15 @@ class CitiesState extends State<Cities> {
   late Map<String, WeatherInfo> cityMap;
   int count = 0;
   final searchController = TextEditingController();
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-      new GlobalKey<RefreshIndicatorState>();
+  GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
     super.initState();
-    cityMap = Map();
+    cityMap = <String, WeatherInfo>{};
+
     _getCitiesId().then((list) {
       for (String id in list) {
         _fetchWeatherInfo(id);
@@ -42,17 +40,17 @@ class CitiesState extends State<Cities> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
+    return MaterialApp(
+      home: Scaffold(
         key: _scaffoldKey,
         floatingActionButton: FloatingActionButton.extended(
             tooltip: 'Show textfield',
-            icon: Icon(Icons.add),
-            label: new Text("城市"),
+            icon: const Icon(Icons.add),
+            label: const Text("城市"),
             onPressed: _showCityTextField),
         appBar: AppBar(
           leading: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_back,
                 color: Colors.black,
               ),
@@ -61,17 +59,17 @@ class CitiesState extends State<Cities> {
               }),
           elevation: 2.0,
           backgroundColor: Colors.white,
-          title: Text(
+          title: const Text(
             "城市",
             style: TextStyle(color: Colors.black),
           ),
           centerTitle: true,
         ),
-        body: new RefreshIndicator(
+        body: RefreshIndicator(
           key: _refreshIndicatorKey,
           onRefresh: _handleRefresh,
-          child: new Center(
-            child: new ListView(
+          child: Center(
+            child: ListView(
               children: _buildCitiesWeather(cityMap),
             ),
           ),
@@ -81,14 +79,16 @@ class CitiesState extends State<Cities> {
   }
 
   void _showCityTextField() {
-    _scaffoldKey.currentState?.showBottomSheet<Null>((BuildContext context) {
-      return new Container(
-          decoration: new BoxDecoration(
-              border: new Border(
-                  top: new BorderSide(color: Theme.of(context).dividerColor))),
-          child: new Padding(
+    _scaffoldKey.currentState!.showBottomSheet((BuildContext context) {
+      return Container(
+          decoration: BoxDecoration(
+              border: Border(
+                  top: BorderSide(color: Theme
+                      .of(context)
+                      .dividerColor))),
+          child: Padding(
             padding: const EdgeInsets.all(32.0),
-            child: new TextField(
+            child: TextField(
               controller: searchController,
               textInputAction: TextInputAction.search,
               onSubmitted: (String name) {
@@ -99,12 +99,12 @@ class CitiesState extends State<Cities> {
                 });
               },
               maxLines: 1,
-              style: TextStyle(fontSize: 16.0, color: Colors.grey),
+              style: const TextStyle(fontSize: 16.0, color: Colors.grey),
               //输入文本的样式
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: '查询其他城市',
                 hintStyle: TextStyle(fontSize: 14.0, color: Colors.grey),
-                prefixIcon: new Icon(
+                prefixIcon: Icon(
                   Icons.search,
                   color: Colors.grey,
                   size: 20.0,
@@ -115,23 +115,15 @@ class CitiesState extends State<Cities> {
     });
   }
 
-  Future<Null> _handleRefresh() {
-    initState();
-    final Completer<Null> completer = new Completer<Null>();
-    new Timer(const Duration(seconds: 1), () {
-      completer.complete(null);
-    });
-    return completer.future.then((_) {
-      _scaffoldKey.currentState?.showSnackBar(
-          new SnackBar(content: const Text('刷新成功'), action: null));
-    });
-  }
+  Future<void> _handleRefresh() async {}
 
   Future<List<String>> _getCitiesId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? ids = prefs.getStringList("citiesids");
-    print("_getCitiesId ======" + ids.toString());
-    if (ids != null && ids.length > 0) {
+    if (kDebugMode) {
+      print("_getCitiesId ======" + ids.toString());
+    }
+    if (ids!.isNotEmpty) {
       count = ids.length;
       return ids;
     }
@@ -146,7 +138,7 @@ class CitiesState extends State<Cities> {
     var response = await request.close();
     try {
       if (response.statusCode == HttpStatus.ok) {
-        var json = await response.transform(Utf8Decoder()).join();
+        var json = await response.transform(const Utf8Decoder()).join();
         Map map = jsonDecode(json);
         print(map["value"][0].toString());
         cityMap[id] = WeatherInfo.fromJson(map["value"][0]);
@@ -166,10 +158,7 @@ class CitiesState extends State<Cities> {
   Future<void> _setCitiesId(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? ids = prefs.getStringList("citiesids");
-    if (ids == null) {
-      ids = [];
-    }
-    if (!ids.contains(id)) {
+    if (!ids!.contains(id)) {
       ids.add(id);
     }
     await prefs.setStringList("citiesids", ids);
@@ -198,54 +187,55 @@ class CitiesState extends State<Cities> {
     } else if (weather.contains("雷")) {
       image = "images/lightning.png";
     }
-    print("_buildCityWeatherItem============ " + weatherInfo.city);
+    if (kDebugMode) {
+      print("_buildCityWeatherItem============ " + weatherInfo.city);
+    }
 
-    return new InkWell(
+    return InkWell(
       onTap: () {
         idSelected = weatherInfo.cityid.toString();
         Navigator.of(context)
             .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
       },
-      child: new Container(
-          padding: EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
+      child: Container(
+          padding: const EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
           height: 200.0,
           alignment: Alignment.center,
           child: Card(
-            child: new Stack(
+            child: Stack(
               children: <Widget>[
-                Container(
-                  child: new Image.asset(image, fit: BoxFit.fill),
+                SizedBox(
+                  child: Image.asset(image, fit: BoxFit.fill),
                   height: 200.0,
                   width: double.infinity,
                 ),
                 Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         color: Color(
-                      0x33000000,
-                    )),
+                          0x33000000,
+                        )),
                     child: Container(
-                      padding: EdgeInsets.only(top: 10.0, left: 20.0),
+                      padding: const EdgeInsets.only(top: 10.0, left: 20.0),
                       alignment: Alignment.topLeft,
                       child: Column(
                         children: <Widget>[
                           Text(
                             weatherInfo.city,
-                            style: TextStyle(fontSize: 22.0),
+                            style: const TextStyle(fontSize: 22.0),
                           ),
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.only(top: 10.0),
                           ),
-                          Container(
-                              child: Text(
+                          Text(
                             weatherInfo.realtime.weather,
-                            style: TextStyle(fontSize: 18.0),
-                          )),
-                          Padding(
+                            style: const TextStyle(fontSize: 18.0),
+                          ),
+                          const Padding(
                             padding: EdgeInsets.only(top: 10.0),
                           ),
                           Text(
                             weatherInfo.realtime.temp + "℃",
-                            style: TextStyle(fontSize: 18.0),
+                            style: const TextStyle(fontSize: 18.0),
                           )
                         ],
                       ),
