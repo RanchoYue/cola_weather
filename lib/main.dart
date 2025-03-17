@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
         .listen((Map<String, Object> result) {
       setState(() {
         _locationResult = result;
-        print("_locationResult : $_locationResult");
+        // print("_locationResult : $_locationResult");
       });
     });
   }

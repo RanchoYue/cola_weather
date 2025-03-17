@@ -24,11 +24,12 @@ class CitiesState extends State<Cities> {
   final searchController = TextEditingController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
-  GlobalKey<RefreshIndicatorState>();
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
     super.initState();
+
     cityMap = <String, WeatherInfo>{};
 
     _getCitiesId().then((list) {
@@ -44,34 +45,28 @@ class CitiesState extends State<Cities> {
       home: Scaffold(
         key: _scaffoldKey,
         floatingActionButton: FloatingActionButton.extended(
-            tooltip: 'Show textfield',
-            icon: const Icon(Icons.add),
-            label: const Text("城市"),
-            onPressed: _showCityTextField),
+          tooltip: 'Show textfield',
+          icon: const Icon(Icons.add),
+          label: const Text("城市"),
+          onPressed: _showCityTextField,
+        ),
         appBar: AppBar(
           leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Colors.black,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
           elevation: 2.0,
           backgroundColor: Colors.white,
-          title: const Text(
-            "城市",
-            style: TextStyle(color: Colors.black),
-          ),
+          title: const Text("城市", style: TextStyle(color: Colors.black)),
           centerTitle: true,
         ),
         body: RefreshIndicator(
           key: _refreshIndicatorKey,
           onRefresh: _handleRefresh,
           child: Center(
-            child: ListView(
-              children: _buildCitiesWeather(cityMap),
-            ),
+            child: ListView(children: _buildCitiesWeather(cityMap)),
           ),
         ),
       ),
@@ -81,41 +76,56 @@ class CitiesState extends State<Cities> {
   void _showCityTextField() {
     _scaffoldKey.currentState!.showBottomSheet((BuildContext context) {
       return Container(
-          decoration: BoxDecoration(
-              border: Border(
-                  top: BorderSide(color: Theme
-                      .of(context)
-                      .dividerColor))),
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: TextField(
-              controller: searchController,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (String name) {
-                searchController.clear();
-                Navigator.pop(context);
-                _setCitiesId(HomePageState.getIdByName(name)).then((_) {
-                  _refreshIndicatorKey.currentState?.show();
-                });
-              },
-              maxLines: 1,
-              style: const TextStyle(fontSize: 16.0, color: Colors.grey),
-              //输入文本的样式
-              decoration: const InputDecoration(
-                hintText: '查询其他城市',
-                hintStyle: TextStyle(fontSize: 14.0, color: Colors.grey),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.grey,
-                  size: 20.0,
-                ),
-              ),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Theme.of(context).dividerColor),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: TextField(
+            controller: searchController,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (String name) {
+              searchController.clear();
+              Navigator.pop(context);
+              _setCitiesId(HomePageState.getIdByName(name)).then((_) {
+                _refreshIndicatorKey.currentState?.show();
+              });
+            },
+            maxLines: 1,
+            style: const TextStyle(fontSize: 16.0, color: Colors.grey),
+            //输入文本的样式
+            decoration: const InputDecoration(
+              hintText: '查询其他城市',
+              hintStyle: TextStyle(fontSize: 14.0, color: Colors.grey),
+              prefixIcon: Icon(Icons.search, color: Colors.grey, size: 20.0),
             ),
-          ));
+          ),
+        ),
+      );
     });
   }
 
-  Future<void> _handleRefresh() async {}
+  Future<void> _handleRefresh() async {
+    print("_handleRefresh");
+
+    _getCitiesId().then((list) {
+      for (String id in list) {
+        _fetchWeatherInfo(id);
+      }
+    });
+
+    final Completer<void> completer = Completer<void>();
+    Timer(const Duration(seconds: 1), () {
+      completer.complete(null);
+    });
+    return completer.future.then((_) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('刷新成功')));
+    });
+  }
 
   Future<List<String>> _getCitiesId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -123,7 +133,7 @@ class CitiesState extends State<Cities> {
     if (kDebugMode) {
       print("_getCitiesId ======" + ids.toString());
     }
-    if (ids!.isNotEmpty) {
+    if (ids != null && ids.isNotEmpty) {
       count = ids.length;
       return ids;
     }
@@ -131,9 +141,10 @@ class CitiesState extends State<Cities> {
   }
 
   _fetchWeatherInfo(String id) async {
-    var httpClient = new HttpClient();
-    var uri = new Uri.http(
-        'aider.meizu.com', '/app/weather/listWeather', {'cityIds': id});
+    var httpClient = HttpClient();
+    var uri = Uri.http('aider.meizu.com', '/app/weather/listWeather', {
+      'cityIds': id,
+    });
     var request = await httpClient.getUrl(uri);
     var response = await request.close();
     try {
@@ -156,11 +167,16 @@ class CitiesState extends State<Cities> {
   }
 
   Future<void> _setCitiesId(String id) async {
+    print("id ： " + id);
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? ids = prefs.getStringList("citiesids");
-    if (!ids!.contains(id)) {
+    List<String> ids = prefs.getStringList("citiesids") ?? [];
+
+    if (!ids.contains(id)) {
       ids.add(id);
     }
+    print("ids ： " + ids.toString());
+
     await prefs.setStringList("citiesids", ids);
   }
 
@@ -194,55 +210,51 @@ class CitiesState extends State<Cities> {
     return InkWell(
       onTap: () {
         idSelected = weatherInfo.cityid.toString();
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
       },
       child: Container(
-          padding: const EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
-          height: 200.0,
-          alignment: Alignment.center,
-          child: Card(
-            child: Stack(
-              children: <Widget>[
-                SizedBox(
-                  child: Image.asset(image, fit: BoxFit.fill),
-                  height: 200.0,
-                  width: double.infinity,
-                ),
-                Container(
-                    decoration: const BoxDecoration(
-                        color: Color(
-                          0x33000000,
-                        )),
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 10.0, left: 20.0),
-                      alignment: Alignment.topLeft,
-                      child: Column(
-                        children: <Widget>[
-                          Text(
-                            weatherInfo.city,
-                            style: const TextStyle(fontSize: 22.0),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 10.0),
-                          ),
-                          Text(
-                            weatherInfo.realtime.weather,
-                            style: const TextStyle(fontSize: 18.0),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 10.0),
-                          ),
-                          Text(
-                            weatherInfo.realtime.temp + "℃",
-                            style: const TextStyle(fontSize: 18.0),
-                          )
-                        ],
+        padding: const EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0),
+        height: 200.0,
+        alignment: Alignment.center,
+        child: Card(
+          child: Stack(
+            children: <Widget>[
+              SizedBox(
+                child: Image.asset(image, fit: BoxFit.fill),
+                height: 200.0,
+                width: double.infinity,
+              ),
+              Container(
+                decoration: const BoxDecoration(color: Color(0x33000000)),
+                child: Container(
+                  padding: const EdgeInsets.only(top: 10.0, left: 20.0),
+                  alignment: Alignment.topLeft,
+                  child: Column(
+                    children: <Widget>[
+                      Text(
+                        weatherInfo.city,
+                        style: const TextStyle(fontSize: 22.0),
                       ),
-                    ))
-              ],
-            ),
-          )),
+                      const Padding(padding: EdgeInsets.only(top: 10.0)),
+                      Text(
+                        weatherInfo.realtime.weather,
+                        style: const TextStyle(fontSize: 18.0),
+                      ),
+                      const Padding(padding: EdgeInsets.only(top: 10.0)),
+                      Text(
+                        weatherInfo.realtime.temp + "℃",
+                        style: const TextStyle(fontSize: 18.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
