@@ -108,8 +108,8 @@ class HomePageState extends State<HomePage> {
                         child: TextField(
                           controller: searchController,
                           textInputAction: TextInputAction.search,
-                          onSubmitted: (String _) {
-                            _fetchWeatherInfo(getIdByName(""));
+                          onSubmitted: (String location) {
+                            _fetchWeatherInfo(getIdByName(location));
                           },
                           maxLines: 1,
                           style: const TextStyle(
